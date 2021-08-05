@@ -10,19 +10,74 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.some(user => user.username === username);
+
+  if (!user) {
+    return response.status(404).json({ error: "User does not exist"});
+  }
+
+  request.user = user;
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+   const { user } = request;
+
+   const todos = user.todos.length;
+
+   const userPro = user.pro === true; 
+
+   if (!userPro && todos >= 10) {
+     return response.status(403).json({ error: 'User is note use free plan'});
+   }
+
+   request.user = user;
+
+   return next();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.some(user => user.username === username);
+
+  if (!user) {
+    return response.status(404).json({ error: "error"});
+  }
+
+  const validateUuid = validate(id);
+
+  if (!validateUuid) {
+    return response.status(400).json({ error: "error"});
+  }
+
+  const todo = user.id === id;
+
+  if (!todo) {
+    return response.status(404).json({ error: "error"});
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id);
+
+  if (!user) {
+    return response.status(404).json({ error: "Error!"});
+  }
+
+  request.user = user;
+  return next();
+
 }
 
 app.post('/users', (request, response) => {
